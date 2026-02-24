@@ -77,7 +77,13 @@ public interface Map2D {
 	 */
 	public void setPixel(Pixel2D p, int v);
 
-	/**
+    /**
+     * BFS like shortest the computation based on iterative raster implementation of BFS, see:
+     * https://en.wikipedia.org/wiki/Breadth-first_search
+     */
+    Pixel2D[] shortestPath(Pixel2D p1, Pixel2D p2, int obsColor, boolean cyclic);
+
+    /**
 	 * @param p the 2D coordinate.
 	 * @return true iff p is with in this map.
 	 */
@@ -134,4 +140,8 @@ public interface Map2D {
 	 * @return a new map with all the shortest path distances from the starting point to each entry in this map.
 	 */
 	public Map2D allDistance(Pixel2D start, int obsColor);
+
+    Map2D allDistance(Pixel2D start, int obsColor, boolean cyclic);
+
+    /////// add your code below ///////  Map2D allDistance(Pixel2D start, int obsColor, boolean cyclic);
 }
