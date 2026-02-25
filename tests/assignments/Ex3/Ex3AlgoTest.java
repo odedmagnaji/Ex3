@@ -41,4 +41,14 @@ public class Ex3AlgoTest {
         assertEquals(Game.RIGHT, algo.opposite(Game.LEFT));
         assertEquals(Game.LEFT, algo.opposite(Game.RIGHT));
     }
+
+    @Test
+    void testIsLegal() {
+        int[][] board = new int[20][20];
+        int blue = -1;
+        board[5][5] = blue;
+
+        assertFalse(algo.isLegal(new Point(5, 5), board, blue));
+        assertTrue(algo.isLegal(new Point(1, 1), board, blue));
+    }
 }
