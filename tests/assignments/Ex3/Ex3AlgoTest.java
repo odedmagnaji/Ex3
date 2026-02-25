@@ -33,4 +33,12 @@ public class Ex3AlgoTest {
         Point edgeLeft = new Point(0, 5);
         assertEquals(19, algo.getNeighbor(edgeLeft, Game.LEFT, w, h).x);
     }
+
+    @Test
+    void testOpposite() {
+        assertEquals(Game.DOWN, algo.opposite(Game.UP));
+        assertEquals(Game.UP, algo.opposite(Game.DOWN));
+        assertEquals(Game.RIGHT, algo.opposite(Game.LEFT));
+        assertEquals(Game.LEFT, algo.opposite(Game.RIGHT));
+    }
 }
