@@ -59,4 +59,24 @@ public class Ex3AlgoTest {
         assertTrue(algo.isGhostHouse(new Point(10, 10), board));
         assertFalse(algo.isGhostHouse(new Point(0, 0), board));
     }
+
+    @Test
+    void testComputeBFS() {
+        int w = 30;
+        int h = 30;
+        int[][] board = new int[w][h];
+        int blue = -1;
+
+
+        board[1][0] = blue;
+        board[1][1] = blue;
+        board[1][2] = blue;
+
+        int[][] dists = algo.computeBFS(new Point(0, 0), board, blue);
+
+
+        assertEquals(0, dists[0][0], "Start point must be distance 0");
+        assertNotEquals(-1, dists[2][0], "Target point (2,0) must be reachable");
+        assertTrue(dists[2][0] > 2, "Path must take more than 2 steps to bypass the wall");
+    }
 }
