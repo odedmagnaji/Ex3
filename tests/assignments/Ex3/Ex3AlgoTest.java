@@ -7,6 +7,10 @@ import java.awt.Point;
 import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * JUnit test suite for Ex3Algo.
+ * Validates pathfinding, geometry, and safety mechanisms for Level 4.
+ */
 public class Ex3AlgoTest {
 
     private Ex3Algo algo;
@@ -16,6 +20,9 @@ public class Ex3AlgoTest {
         algo = new Ex3Algo();
     }
 
+    /**
+     * Tests the parsing of coordinate strings received from the game server.
+     */
     @Test
     void testExtractPosition() {
         Point p = algo.extractPosition("25, 12");
@@ -23,6 +30,9 @@ public class Ex3AlgoTest {
         assertEquals(12, p.y);
     }
 
+    /**
+     * Validates movement logic, specifically the cyclic wrap-around mechanics of the board edges.
+     */
     @Test
     void testGetNeighborAndWrapAround() {
         int w = 20;
@@ -35,6 +45,9 @@ public class Ex3AlgoTest {
         assertEquals(19, algo.getNeighbor(edgeLeft, Game.LEFT, w, h).x);
     }
 
+    /**
+     * Ensures the algorithm correctly identifies opposite directions to prevent oscillation (ABAB movement).
+     */
     @Test
     void testOpposite() {
         assertEquals(Game.DOWN, algo.opposite(Game.UP));
@@ -43,6 +56,9 @@ public class Ex3AlgoTest {
         assertEquals(Game.LEFT, algo.opposite(Game.RIGHT));
     }
 
+    /**
+     * Tests obstacle detection, ensuring Pac-Man cannot move into blue walls.
+     */
     @Test
     void testIsLegal() {
         int[][] board = new int[20][20];
@@ -53,6 +69,9 @@ public class Ex3AlgoTest {
         assertTrue(algo.isLegal(new Point(1, 1), board, blue));
     }
 
+    /**
+     * Verifies that the center area (ghost house) is correctly identified as a restricted zone.
+     */
     @Test
     void testIsGhostHouse() {
         int[][] board = new int[20][20];
@@ -61,6 +80,9 @@ public class Ex3AlgoTest {
         assertFalse(algo.isGhostHouse(new Point(0, 0), board));
     }
 
+    /**
+     * Tests the core Breadth-First Search (BFS) logic to ensure it calculates paths around obstacles.
+     */
     @Test
     void testComputeBFS() {
         int w = 30;
@@ -79,6 +101,9 @@ public class Ex3AlgoTest {
         assertTrue(dists[2][0] > 2);
     }
 
+    /**
+     * Validates the Safe-Space counting mechanism used to avoid dead ends and traps.
+     */
     @Test
     void testCountSafeSpace() {
         int w = 30;
