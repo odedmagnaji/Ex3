@@ -14,18 +14,18 @@ import java.util.*;
  */
 public class Ex3Algo implements PacManAlgo {
 
-    private int step = 0;
-    private int BLUE, PINK, GREEN;
+    int step = 0;
+    int BLUE, PINK, GREEN;
 
-    private int lastDir = -1;
-    private Point lastPos = null;
-    private Point lastPos2 = null;
+    int lastDir = -1;
+    Point lastPos = null;
+    Point lastPos2 = null;
 
     // Constants strictly tuned for Level 4 survival
-    private static final int DANGER_RADIUS = 7;
-    private static final int ESCAPE_TRIGGER = 4;
-    private static final int SAFE_SPACE_LIMIT = 18;
-    private static final int EDIBLE_TIME_BUFFER = 2;
+    static final int DANGER_RADIUS = 7;
+    static final int ESCAPE_TRIGGER = 4;
+    static final int SAFE_SPACE_LIMIT = 18;
+    static final int EDIBLE_TIME_BUFFER = 2;
 
     @Override
     public String getInfo() {
@@ -115,7 +115,7 @@ public class Ex3Algo implements PacManAlgo {
         return bestDir;
     }
 
-    private double evaluate(Point pos, int[][] board, double[][] danger, GhostCL[] ghosts, boolean powered, int pink, int green, int blue) {
+    double evaluate(Point pos, int[][] board, double[][] danger, GhostCL[] ghosts, boolean powered, int pink, int green, int blue) {
         double score = 0;
 
         // 1) Safe Space (Anti-trap mobility)
@@ -152,7 +152,7 @@ public class Ex3Algo implements PacManAlgo {
         return score;
     }
 
-    private int countSafeSpace(Point start, int[][] board, double[][] danger, int limit, int blue) {
+    int countSafeSpace(Point start, int[][] board, double[][] danger, int limit, int blue) {
         Queue<Point> q = new LinkedList<>();
         java.util.HashMap<Point, Integer> dists = new java.util.HashMap<>();
         q.add(start); dists.put(start, 0);
@@ -175,7 +175,7 @@ public class Ex3Algo implements PacManAlgo {
         return count;
     }
 
-    private double[][] buildDangerMap(int[][] board, GhostCL[] ghosts, int blue) {
+    double[][] buildDangerMap(int[][] board, GhostCL[] ghosts, int blue) {
         int w = board.length, h = board[0].length;
         double[][] danger = new double[w][h];
         for (double[] r : danger) Arrays.fill(r, Double.POSITIVE_INFINITY);
@@ -196,7 +196,7 @@ public class Ex3Algo implements PacManAlgo {
         return danger;
     }
 
-    private int[][] computeBFS(Point start, int[][] board, int blue) {
+    int[][] computeBFS(Point start, int[][] board, int blue) {
         int w = board.length, h = board[0].length;
         int[][] dists = new int[w][h];
         for (int[] r : dists) Arrays.fill(r, -1);
@@ -216,7 +216,7 @@ public class Ex3Algo implements PacManAlgo {
         return dists;
     }
 
-    private Point findClosest(int[][] board, int[][] distMap, int color) {
+    Point findClosest(int[][] board, int[][] distMap, int color) {
         Point best = null; int min = Integer.MAX_VALUE;
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
@@ -228,7 +228,7 @@ public class Ex3Algo implements PacManAlgo {
         return best;
     }
 
-    private int findNearestEdible(int[][] distMap, GhostCL[] ghosts) {
+    int findNearestEdible(int[][] distMap, GhostCL[] ghosts) {
         int minD = Integer.MAX_VALUE;
         for (GhostCL g : ghosts) {
             if (g.getStatus() == 0 || g.remainTimeAsEatable(0) <= 0) continue;
@@ -239,41 +239,41 @@ public class Ex3Algo implements PacManAlgo {
         return (minD == Integer.MAX_VALUE) ? -1 : minD;
     }
 
-    private Point getNeighbor(Point p, int dir, int w, int h) {
+    Point getNeighbor(Point p, int dir, int w, int h) {
         int x = p.x, y = p.y;
         if (dir == Game.UP) y++; else if (dir == Game.DOWN) y--;
         else if (dir == Game.LEFT) x--; else if (dir == Game.RIGHT) x++;
         return new Point((x + w) % w, (y + h) % h);
     }
 
-    private boolean isLegal(Point p, int[][] board, int blue) {
+    boolean isLegal(Point p, int[][] board, int blue) {
         return board[p.x][p.y] != blue && !isGhostHouse(p, board);
     }
 
-    private boolean isGhostHouse(Point p, int[][] board) {
+    boolean isGhostHouse(Point p, int[][] board) {
         int mx = board.length / 2, my = board[0].length / 2;
         return Math.abs(p.x - mx) < 4 && Math.abs(p.y - my) < 4 && board[p.x][p.y] == 0;
     }
 
-    private boolean isPowered(GhostCL[] ghosts) {
+    boolean isPowered(GhostCL[] ghosts) {
         for (GhostCL g : ghosts) if (g.getStatus() != 0 && g.remainTimeAsEatable(0) > 0) return true;
         return false;
     }
 
-    private int opposite(int dir) {
+    int opposite(int dir) {
         if (dir == Game.UP) return Game.DOWN; if (dir == Game.DOWN) return Game.UP;
         if (dir == Game.LEFT) return Game.RIGHT; if (dir == Game.RIGHT) return Game.LEFT;
         return -1;
     }
 
-    private int firstLegalDir(Point me, int[][] board, int w, int h, int blue) {
+    int firstLegalDir(Point me, int[][] board, int w, int h, int blue) {
         for (int dir : new int[]{Game.UP, Game.DOWN, Game.LEFT, Game.RIGHT}) {
             if (isLegal(getNeighbor(me, dir, w, h), board, blue)) return dir;
         }
         return Game.LEFT;
     }
 
-    private Point extractPosition(String pos) {
+    Point extractPosition(String pos) {
         String[] parts = pos.trim().split(",");
         return new Point(Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()));
     }
