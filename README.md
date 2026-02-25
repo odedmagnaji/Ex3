@@ -12,21 +12,26 @@ The server module is responsible for the core game mechanics and state managemen
   * Exposing a clean interface for the client to interact with.
 
 ## 3. Client Layer (Visualization)
-This layer handles the user interface and graphical rendering using the `StdDraw` library.
+This layer handles the user interface and graphical rendering using the StdDraw library.
 * **Main Responsibilities:** Rendering the board, updating entity positions visually, and managing the main game loop.
 
 ## 4. The Pac-Man Algorithm (Ex3Algo)
-The automatic gameplay is driven by a custom algorithm implemented in the client package. It utilizes modified Map2D algorithms from Ex2 for pathfinding. The AI operates on a dynamic state-machine logic:
-* **Gather Mode:** Prioritizes consuming pink dots using shortest-path calculations (e.g., BFS).
-* **Evade Mode:** Builds a dynamic danger map. When ghosts breach a safe radius, it calculates escape routes to maximize distance and avoid dead ends.
-* **Hunt Mode:** Triggered by consuming green dots. The algorithm actively intercepts vulnerable, smaller ghosts before the power-up timer expires.
+The automatic gameplay is driven by an advanced strategic algorithm optimized for high-difficulty scenarios like Level 4. The AI utilizes a dynamic Weighted Scoring Engine and Safe-Space Analysis:
+
+* **Global Danger Mapping:** Implements a Multi-Source BFS to calculate the true maze distance from all dangerous ghosts in real-time.
+* **Safe-Space Reachability:** Before every move, the algorithm simulates local mobility to ensure Pac-Man avoids dead-ends and corridors where interception is likely.
+* **Dynamic Decision Engine:**
+  * **Gathering:** Prioritizes pink dots using a distance-weighted scoring system.
+  * **Evasion:** Uses hard safety filters and exponential danger penalties to force escape routes when ghosts breach the safety radius.
+  * **Hunting:** Actively tracks and intercepts edible ghosts during power-up phases.
+* **Oscillation Control:** Features a 2-step position memory (Anti-ABAB) to eliminate repetitive back-and-forth movement and maintain momentum.
 
 ## 5. Testing Strategy
 Robustness is ensured through a comprehensive JUnit testing suite for both the client algorithm and the server implementation.
-* **Coverage:** Tests validate movement logic, pathfinding edge cases, and explicitly verify that the algorithm successfully beats level 4.
+* **Coverage:** Tests validate movement logic, pathfinding edge cases, and verify the algorithm successfully clears Level 4.
 
 ## 6. Build, Video, and Distribution
 The project is packaged for easy distribution via GitHub Releases.
-* **Executables:** Includes runnable JAR files (`Ex3_2.jar` for the client solution, `Ex3_3.jar` for the full client-server integration).
-* **Demonstration:** A short video (max 120 seconds) explaining the server-side implementation and demonstrating live gameplay.
-* **Source Files:** Includes full source code (`Ex3_all_src.zip`) and documentation archives (`Ex3_docs.zip`).
+* **Executables:** Includes runnable JAR files (Ex3_2.jar for the client, Ex3_3.jar for full integration).
+* **Demonstration:** A short video (max 120 seconds) explaining the server-side implementation and demonstrating gameplay.
+* **Source Files:** Includes full source code (Ex3_all_src.zip) and documentation (Ex3_docs.zip).
