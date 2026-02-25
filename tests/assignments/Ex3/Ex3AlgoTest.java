@@ -51,4 +51,12 @@ public class Ex3AlgoTest {
         assertFalse(algo.isLegal(new Point(5, 5), board, blue));
         assertTrue(algo.isLegal(new Point(1, 1), board, blue));
     }
+
+    @Test
+    void testIsGhostHouse() {
+        int[][] board = new int[20][20];
+
+        assertTrue(algo.isGhostHouse(new Point(10, 10), board));
+        assertFalse(algo.isGhostHouse(new Point(0, 0), board));
+    }
 }
