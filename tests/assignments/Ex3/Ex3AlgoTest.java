@@ -4,6 +4,7 @@ import exe.ex3.game.Game;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.awt.Point;
+import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Ex3AlgoTest {
@@ -67,16 +68,37 @@ public class Ex3AlgoTest {
         int[][] board = new int[w][h];
         int blue = -1;
 
-
         board[1][0] = blue;
         board[1][1] = blue;
         board[1][2] = blue;
 
         int[][] dists = algo.computeBFS(new Point(0, 0), board, blue);
 
+        assertEquals(0, dists[0][0]);
+        assertNotEquals(-1, dists[2][0]);
+        assertTrue(dists[2][0] > 2);
+    }
 
-        assertEquals(0, dists[0][0], "Start point must be distance 0");
-        assertNotEquals(-1, dists[2][0], "Target point (2,0) must be reachable");
-        assertTrue(dists[2][0] > 2, "Path must take more than 2 steps to bypass the wall");
+    @Test
+    void testCountSafeSpace() {
+        int w = 30;
+        int h = 30;
+        int[][] board = new int[w][h];
+        double[][] dangerMap = new double[w][h];
+        for (double[] r : dangerMap) {
+            Arrays.fill(r, 10.0);
+        }
+        int blue = -1;
+
+        int space = algo.countSafeSpace(new Point(5, 5), board, dangerMap, 15, blue);
+        assertEquals(15, space);
+
+        board[4][5] = blue;
+        board[6][5] = blue;
+        board[5][4] = blue;
+        board[5][6] = blue;
+
+        int trappedSpace = algo.countSafeSpace(new Point(5, 5), board, dangerMap, 15, blue);
+        assertEquals(1, trappedSpace);
     }
 }
