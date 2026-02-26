@@ -3,12 +3,29 @@ package assignments.Ex3.mypacmangame.core;
 import exe.ex3.game.GhostCL;
 import exe.ex3.game.PacmanGame;
 
+/**
+ * The core server implementation that manages the game board and state.
+ */
 public class PacmanServer implements PacmanGame {
 
     private int[][] board;
+    private GhostCL[] ghosts;
 
+    /**
+     * Initializes the server with a specific board layout.
+     * @param board The 2D array representing the game map.
+     */
     public PacmanServer(int[][] board) {
         this.board = board;
+        this.ghosts = new GhostCL[0];
+    }
+
+    /**
+     * Loads the ghost entities into the server state.
+     * @param ghosts The array of ghosts to be managed by the server.
+     */
+    public void initGhosts(GhostCL[] ghosts) {
+        this.ghosts = ghosts;
     }
 
     @Override
@@ -57,13 +74,14 @@ public class PacmanServer implements PacmanGame {
     }
 
     @Override
-    public String getPos(int code) {
-        return "0,0";
+    public String getPos(int i) {
+        return "";
     }
 
     @Override
     public GhostCL[] getGhosts(int code) {
-        return new GhostCL[0];
+        return this.ghosts;
     }
+
 
 }

@@ -2,22 +2,20 @@ package assignments.Ex3.mypacmangame.entities;
 
 import exe.ex3.game.GhostCL;
 
-/**
- * Represents a single Ghost entity in the game.
- */
 public class GhostEntity implements GhostCL {
 
     private String position;
     private int status;
     private int type;
+    private int direction;
 
     public GhostEntity(String position, int status, int type) {
         this.position = position;
         this.status = status;
         this.type = type;
+        this.direction = 1;
     }
 
-    // --- Setters for updating the ghost ---
     public void setPosition(String position) {
         this.position = position;
     }
@@ -26,10 +24,21 @@ public class GhostEntity implements GhostCL {
         this.status = status;
     }
 
-    // --- Custom Getters for our internal logic and tests ---
-    public String getGhostPosition() { return this.position; }
-    public int getGhostStatus() { return this.status; }
-    public int getGhostType() { return this.type; }
+    public void setDirection(int direction) {
+        this.direction = direction;
+    }
+
+    public String getGhostPosition() {
+        return this.position;
+    }
+
+    public int getGhostStatus() {
+        return this.status;
+    }
+
+    public int getGhostType() {
+        return this.type;
+    }
 
     @Override
     public int getType() {
@@ -37,8 +46,8 @@ public class GhostEntity implements GhostCL {
     }
 
     @Override
-    public String getPos(int i) {
-        return "";
+    public String getPos(int code) {
+        return this.position;
     }
 
     @Override
@@ -56,5 +65,13 @@ public class GhostEntity implements GhostCL {
         return 0;
     }
 
-
+    // =========================================================
+    // DO NOT COPY THE RED METHODS. INSTEAD, DO THIS:
+    // 1. Hover over the red 'GhostEntity' class name at the top.
+    // 2. Press Alt + Enter -> "Implement methods" -> OK.
+    // 3. Inside the new methods it created at the bottom, write:
+    //    return this.status; (for the status method)
+    //    return this.type;   (for the type method)
+    //    return this.direction; (for the direction method, if any)
+    // =========================================================
 }
