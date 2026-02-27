@@ -8,52 +8,54 @@ import assignments.Ex3.mypacmangame.entities.GhostEntity;
 import assignments.Ex3.mypacmangame.entities.PacmanEntity;
 import exe.ex3.game.GhostCL;
 
-/**
- * Integration tests for the PacmanServer logic.
- */
 public class PacmanServerTest {
 
     @Test
     void testInitialBoardStorage() {
         int[][] mockBoard = {{1, 1, 1}, {1, 0, 1}};
         PacmanServer server = new PacmanServer(mockBoard);
-
-        int[][] result = server.getGame(0);
-        assertArrayEquals(mockBoard, result);
+        assertArrayEquals(mockBoard, server.getGame(0));
     }
 
     @Test
     void testGhostIntegration() {
         int[][] emptyBoard = {{0}};
         PacmanServer server = new PacmanServer(emptyBoard);
-
         GhostEntity blinky = new GhostEntity("5,5", 0, 1);
-        GhostCL[] myGhosts = { blinky };
-        server.initGhosts(myGhosts);
-
-        GhostCL[] retrievedGhosts = server.getGhosts(0);
-        assertEquals(1, retrievedGhosts.length, "Server should contain exactly 1 ghost.");
-        assertEquals("5,5", retrievedGhosts[0].getPos(0), "The ghost position should match.");
+        server.initGhosts(new GhostCL[]{blinky});
+        assertEquals("5,5", server.getGhosts(0)[0].getPos(0));
     }
 
-    /**
-     * Verifies that the server correctly receives and tracks Pacman.
-     */
     @Test
     void testPacmanIntegration() {
         int[][] emptyBoard = {{0}};
         PacmanServer server = new PacmanServer(emptyBoard);
+        server.initPacman(new PacmanEntity("7,7"));
+        assertEquals("7,7", server.getPos(0));
+    }
 
-        // Create our Pacman actor
-        PacmanEntity myPacman = new PacmanEntity("7,7");
+    @Test
+    void testPacmanMovement() {
+        // Board layout:
+        // 1 1 1
+        // 1 0 0
+        // 1 1 1
+        int[][] board = {
+                {1, 1, 1},
+                {1, 0, 0},
+                {1, 1, 1}
+        };
+        PacmanServer server = new PacmanServer(board);
 
-        // Load Pacman into the server
-        server.initPacman(myPacman);
+        PacmanEntity pacman = new PacmanEntity("1,1");
+        server.initPacman(pacman);
 
-        // Ask the server where Pacman is
-        String serverReportedPos = server.getPos(0);
+        // Try to move UP (dir 0) into a wall (x=1, y=0)
+        server.move(0);
+        assertEquals("1,1", server.getPos(0), "Pacman should not move into a wall.");
 
-        // Verify the server reports the correct position
-        assertEquals("7,7", serverReportedPos, "Server should report Pacman's correct position.");
+        // Try to move RIGHT (dir 1) into an empty space (x=2, y=1)
+        server.move(1);
+        assertEquals("2,1", server.getPos(0), "Pacman should successfully move right.");
     }
 }
