@@ -1,6 +1,8 @@
 package assignments.Ex3.mypacmangame;
 
 import assignments.Ex3.Map;
+import assignments.Ex3.Pixel2D;
+import assignments.Ex3.Index2D;
 import assignments.Ex3.mypacmangame.display.GameDisplay;
 import exe.ex3.game.StdDraw;
 import java.awt.event.KeyEvent;
@@ -14,43 +16,77 @@ public class MyGameController {
         String playerSkin = "morty.png";
         String ghostSkin = "rick.png";
 
-        // --- 2. Visual Map Data ---
-        // 0=Empty, 1=Wall, 2=Point, 3=Apple
-        int[][] visualBoard = {
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1},
-                {1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1},
-                {1, 2, 1, 0, 0, 1, 2, 1, 2, 1, 0, 0, 1, 2, 1},
-                {1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1},
-                {1, 2, 2, 2, 2, 2, 3, 0, 3, 2, 2, 2, 2, 2, 1},
-                {1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1},
-                {1, 2, 1, 0, 0, 1, 2, 1, 2, 1, 0, 0, 1, 2, 1},
-                {1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1},
-                {1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-        };
+        // --- 2. Level Design (String Map) ---
+        // # = Wall, . = Point, A = Apple, M = Morty (Start), R = Rick (Start)
+        String levelStr =
+                "###################\n" +
+                        "#M......#.........#\n" +
+                        "#.##.##.#.##.####.#\n" +
+                        "#.................#\n" +
+                        "#.###.#####.##.##.#\n" +
+                        "#.....#...#.......#\n" +
+                        "#####.#.A.#.#####.#\n" +
+                        "#.......#.......R.#\n" +
+                        "#.##.#######.####.#\n" +
+                        "#.................#\n" +
+                        "###################";
 
-        // --- 3. Logic Map Setup ---
-        // We transpose to ensure logical (x,y) matches visual [row][col]
+        // --- 3. Parsing the Level ---
+        // Convert the String into a 2D array and find start positions
+        String[] rows = levelStr.split("\n");
+        int h = rows.length;
+        int w = rows[0].length();
+        int[][] visualBoard = new int[h][w];
+
+        int startPx = 1, startPy = 1; // Default
+        int startGx = 10, startGy = 10; // Default
+
+        for (int y = 0; y < h; y++) {
+            String row = rows[y];
+            for (int x = 0; x < w; x++) {
+                char c = (x < row.length()) ? row.charAt(x) : ' ';
+
+                if (c == '#') {
+                    visualBoard[y][x] = 1; // Wall
+                } else if (c == '.') {
+                    visualBoard[y][x] = 2; // Point
+                } else if (c == 'A') {
+                    visualBoard[y][x] = 3; // Apple
+                } else if (c == 'M') {
+                    visualBoard[y][x] = 0; // Empty floor
+                    startPx = x;
+                    startPy = y;
+                } else if (c == 'R') {
+                    visualBoard[y][x] = 0; // Empty floor
+                    startGx = x;
+                    startGy = y;
+                } else {
+                    visualBoard[y][x] = 0; // Empty
+                }
+            }
+        }
+
+        // --- 4. Logic Map Setup ---
+        // Transpose for Map logic (x,y) vs Visual [row][col]
         int[][] logicalBoard = transpose(visualBoard);
         Map gameMap = new Map(logicalBoard);
-        gameMap.setCyclic(false); // Disable cyclic to prevent jitter
+        gameMap.setCyclic(false);
 
-        // --- 4. Game Variables ---
-        int pX = 7;
-        int pY = 5;
+        // --- 5. Game Variables ---
+        int pX = startPx;
+        int pY = startPy;
 
-        int ghostX = 1;
-        int ghostY = 1;
+        int ghostX = startGx;
+        int ghostY = startGy;
 
         int score = 0;
         boolean isRunning = true;
 
-        // --- 5. Init Display ---
+        // --- 6. Init Display ---
         GameDisplay display = new GameDisplay();
-        display.initCanvas(visualBoard[0].length, visualBoard.length);
+        display.initCanvas(w, h);
 
-        // --- 6. Game Loop ---
+        // --- 7. Game Loop ---
         while (isRunning) {
             // A. Input Handling
             int dx = 0, dy = 0;
@@ -66,16 +102,13 @@ public class MyGameController {
             }
 
             // C. Ghost AI (Internal GPS)
-            // We calculate the next step using a local BFS function
-            // This bypasses any issues with external files
             int[] nextMove = bfsGetNextStep(gameMap, ghostX, ghostY, pX, pY);
 
             if (nextMove != null) {
                 ghostX = nextMove[0];
                 ghostY = nextMove[1];
             } else {
-                // Fallback if no path (should not happen in open map)
-                // Random move just in case
+                // Fallback: Random move
                 int gDx = 0, gDy = 0;
                 if (Math.random() < 0.5) gDx = (Math.random() < 0.5) ? 1 : -1;
                 else gDy = (Math.random() < 0.5) ? 1 : -1;
@@ -101,12 +134,17 @@ public class MyGameController {
             if (pX == ghostX && pY == ghostY) {
                 System.out.println("GAME OVER! Ghost caught Player.");
                 score -= 10;
+                // Optional: Reset positions
+                pX = startPx;
+                pY = startPy;
+                ghostX = startGx;
+                ghostY = startGy;
             }
 
             // E. Rendering
             display.drawBoard(visualBoard, 1);
-            display.drawPlayer(pX, pY, playerSkin, visualBoard[0].length, visualBoard.length);
-            display.drawGhost(ghostX, ghostY, ghostSkin, visualBoard[0].length, visualBoard.length);
+            display.drawPlayer(pX, pY, playerSkin, w, h);
+            display.drawGhost(ghostX, ghostY, ghostSkin, w, h);
 
             StdDraw.setPenColor(255, 255, 255);
             StdDraw.textLeft(0.05, 0.95, "Score: " + score);
@@ -125,8 +163,6 @@ public class MyGameController {
         int width = map.getWidth();
         int height = map.getHeight();
         boolean[][] visited = new boolean[width][height];
-        // Parent array stores "from where did we come" to reconstruct path
-        // We store it as encoded integer: x * 1000 + y
         int[][] parent = new int[width][height];
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++) parent[i][j] = -1;
@@ -155,10 +191,9 @@ public class MyGameController {
                 int ny = cy + d[1];
 
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                    // Check if not wall (1) and not visited
                     if (map.getPixel(nx, ny) != 1 && !visited[nx][ny]) {
                         visited[nx][ny] = true;
-                        parent[nx][ny] = cx * 1000 + cy; // Store parent coordinate
+                        parent[nx][ny] = cx * 1000 + cy;
                         queue.add(new int[]{nx, ny});
                     }
                 }
@@ -167,20 +202,17 @@ public class MyGameController {
 
         if (!found) return null;
 
-        // Reconstruct path backwards from Target to Start
         int currX = targetX;
         int currY = targetY;
 
-        // Loop until we find the node directly connected to start
         while (true) {
             int pVal = parent[currX][currY];
-            if (pVal == -1) return null; // Should not happen if found is true
+            if (pVal == -1) return null;
 
             int pX = pVal / 1000;
             int pY = pVal % 1000;
 
             if (pX == startX && pY == startY) {
-                // Found the first step!
                 return new int[]{currX, currY};
             }
             currX = pX;
