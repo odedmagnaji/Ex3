@@ -6,7 +6,7 @@ public class GameDisplay {
 
     public void initCanvas(int width, int height) {
         StdDraw.setCanvasSize();
-        // Default 0-1 scale, no setXscale needed to avoid JAR errors
+        // Default 0-1 scale used to ensure compatibility with the JAR
 
         try {
             StdDraw.enableDoubleBuffering(0);
@@ -64,6 +64,22 @@ public class GameDisplay {
             StdDraw.picture(drawX, drawY, skin, sizeW * 0.85, sizeH * 0.85);
         } catch (Exception e) {
             StdDraw.setPenColor(255, 255, 0);
+            StdDraw.filledRectangle(drawX, drawY, sizeW / 3, sizeH / 3);
+        }
+    }
+
+    public void drawGhost(int x, int y, String skin, int boardW, int boardH) {
+        double drawX = (x + 0.5) / boardW;
+        double drawY = (boardH - 1 - y + 0.5) / boardH;
+        double sizeW = 1.0 / boardW;
+        double sizeH = 1.0 / boardH;
+
+        try {
+            // Draw the ghost skin
+            StdDraw.picture(drawX, drawY, skin, sizeW * 0.9, sizeH * 0.9);
+        } catch (Exception e) {
+            // Fallback: Red square if image not found
+            StdDraw.setPenColor(255, 0, 0);
             StdDraw.filledRectangle(drawX, drawY, sizeW / 3, sizeH / 3);
         }
     }
