@@ -1,8 +1,6 @@
 package assignments.Ex3.mypacmangame;
 
 import assignments.Ex3.Map;
-import assignments.Ex3.Pixel2D;
-import assignments.Ex3.Index2D;
 import assignments.Ex3.mypacmangame.display.GameDisplay;
 import exe.ex3.game.StdDraw;
 import java.awt.event.KeyEvent;
@@ -11,35 +9,158 @@ import java.util.Queue;
 
 public class MyGameController {
 
-    public static void main(String[] args) {
-        // --- 1. Configuration ---
-        String playerSkin = "morty.png";
-        String ghostSkin = "rick.png";
+    // Global Game State
+    private static int score = 0;
+    private static int lives = 3;
+    private static int currentLevelIndex = 0;
+    private static int pelletsLeft = 0;
 
-        // --- 2. Level Design (String Map) ---
-        // # = Wall, . = Point, A = Apple, M = Morty (Start), R = Rick (Start)
-        String levelStr =
+    // Entities
+    private static int pX, pY, startPx, startPy;
+    private static int ghostX, ghostY, startGx, startGy;
+
+    // Map & Display
+    private static Map gameMap;
+    private static int[][] visualBoard;
+    private static GameDisplay display;
+    private static String playerSkin = "morty.png";
+    private static String ghostSkin = "rick.png";
+
+    public static void main(String[] args) {
+
+        // --- 1. Define Levels ---
+        String[] levels = {
+                // Level 1: Easy
+                "###########\n" +
+                        "#M.......R#\n" +
+                        "#.#######.#\n" +
+                        "#.........#\n" +
+                        "###########",
+
+                // Level 2: Medium
                 "###################\n" +
                         "#M......#.........#\n" +
                         "#.##.##.#.##.####.#\n" +
                         "#.................#\n" +
-                        "#.###.#####.##.##.#\n" +
-                        "#.....#...#.......#\n" +
-                        "#####.#.A.#.#####.#\n" +
-                        "#.......#.......R.#\n" +
-                        "#.##.#######.####.#\n" +
-                        "#.................#\n" +
-                        "###################";
+                        "#####.#.R.#.#####.#\n" +
+                        "#.......#.........#\n" +
+                        "###################",
 
-        // --- 3. Parsing the Level ---
-        // Convert the String into a 2D array and find start positions
+                // Level 3: Hard
+                "###################\n" +
+                        "#M#...#...#...#..R#\n" +
+                        "#.#.#.#.#.#.#.#.#.#\n" +
+                        "#.................#\n" +
+                        "#.###.#####.###.###\n" +
+                        "#.................#\n" +
+                        "###################"
+        };
+
+        // --- 2. Initialize First Level ---
+        loadLevel(levels[currentLevelIndex]);
+
+        display = new GameDisplay();
+        display.initCanvas(visualBoard[0].length, visualBoard.length);
+
+        boolean isRunning = true;
+
+        // --- 3. Main Game Loop ---
+        while (isRunning) {
+            // A. Input
+            int dx = 0, dy = 0;
+            if (StdDraw.isKeyPressed(KeyEvent.VK_UP))    dy = -1;
+            if (StdDraw.isKeyPressed(KeyEvent.VK_DOWN))  dy = 1;
+            if (StdDraw.isKeyPressed(KeyEvent.VK_LEFT))  dx = -1;
+            if (StdDraw.isKeyPressed(KeyEvent.VK_RIGHT)) dx = 1;
+
+            // B. Player Move
+            if (gameMap.getPixel(pX + dx, pY + dy) != 1) {
+                pX += dx;
+                pY += dy;
+            }
+
+            // C. Ghost AI
+            int[] nextMove = bfsGetNextStep(gameMap, ghostX, ghostY, pX, pY);
+            if (nextMove != null) {
+                ghostX = nextMove[0];
+                ghostY = nextMove[1];
+            } else {
+                int gDx = 0, gDy = 0;
+                if (Math.random() < 0.5) gDx = (Math.random() < 0.5) ? 1 : -1;
+                else gDy = (Math.random() < 0.5) ? 1 : -1;
+                if (gameMap.getPixel(ghostX + gDx, ghostY + gDy) != 1) {
+                    ghostX += gDx;
+                    ghostY += gDy;
+                }
+            }
+
+            // D. Logic: Eating & Level Complete
+            int currentCell = gameMap.getPixel(pX, pY);
+            if (currentCell == 2 || currentCell == 3) {
+                score++;
+                pelletsLeft--;
+                gameMap.setPixel(pX, pY, 0);
+                visualBoard[pY][pX] = 0;
+                System.out.println("Score: " + score + " | Left: " + pelletsLeft);
+            }
+
+            // CHECK WIN CONDITION
+            if (pelletsLeft <= 0) {
+                System.out.println("LEVEL COMPLETE!");
+                currentLevelIndex++;
+
+                if (currentLevelIndex < levels.length) {
+                    loadLevel(levels[currentLevelIndex]);
+                    display.initCanvas(visualBoard[0].length, visualBoard.length);
+
+                    // Fixed: Using show instead of pause
+                    StdDraw.show(1000);
+                } else {
+                    System.out.println("YOU WIN THE GAME!");
+                    System.out.println("Final Score: " + score);
+                    isRunning = false;
+                }
+            }
+
+            // CHECK LOSS CONDITION
+            if (pX == ghostX && pY == ghostY) {
+                lives--;
+                System.out.println("HIT! Lives left: " + lives);
+
+                if (lives > 0) {
+                    pX = startPx;
+                    pY = startPy;
+                    ghostX = startGx;
+                    ghostY = startGy;
+
+                    // Fixed: Using show instead of pause
+                    StdDraw.show(1000);
+                } else {
+                    System.out.println("GAME OVER");
+                    isRunning = false;
+                }
+            }
+
+            // E. Render
+            if (isRunning) {
+                display.drawBoard(visualBoard, 1);
+                display.drawPlayer(pX, pY, playerSkin, visualBoard[0].length, visualBoard.length);
+                display.drawGhost(ghostX, ghostY, ghostSkin, visualBoard[0].length, visualBoard.length);
+
+                StdDraw.setPenColor(255, 255, 255);
+                StdDraw.textLeft(0.05, 0.95, "Lvl: " + (currentLevelIndex+1) + " | Score: " + score + " | Lives: " + lives);
+
+                StdDraw.show(200);
+            }
+        }
+    }
+
+    private static void loadLevel(String levelStr) {
         String[] rows = levelStr.split("\n");
         int h = rows.length;
         int w = rows[0].length();
-        int[][] visualBoard = new int[h][w];
-
-        int startPx = 1, startPy = 1; // Default
-        int startGx = 10, startGy = 10; // Default
+        visualBoard = new int[h][w];
+        pelletsLeft = 0;
 
         for (int y = 0; y < h; y++) {
             String row = rows[y];
@@ -47,116 +168,34 @@ public class MyGameController {
                 char c = (x < row.length()) ? row.charAt(x) : ' ';
 
                 if (c == '#') {
-                    visualBoard[y][x] = 1; // Wall
+                    visualBoard[y][x] = 1;
                 } else if (c == '.') {
-                    visualBoard[y][x] = 2; // Point
+                    visualBoard[y][x] = 2;
+                    pelletsLeft++;
                 } else if (c == 'A') {
-                    visualBoard[y][x] = 3; // Apple
+                    visualBoard[y][x] = 3;
+                    pelletsLeft++;
                 } else if (c == 'M') {
-                    visualBoard[y][x] = 0; // Empty floor
-                    startPx = x;
-                    startPy = y;
+                    visualBoard[y][x] = 0;
+                    startPx = x; startPy = y;
+                    pX = x; pY = y;
                 } else if (c == 'R') {
-                    visualBoard[y][x] = 0; // Empty floor
-                    startGx = x;
-                    startGy = y;
+                    visualBoard[y][x] = 0;
+                    startGx = x; startGy = y;
+                    ghostX = x; ghostY = y;
                 } else {
-                    visualBoard[y][x] = 0; // Empty
+                    visualBoard[y][x] = 0;
                 }
             }
         }
 
-        // --- 4. Logic Map Setup ---
-        // Transpose for Map logic (x,y) vs Visual [row][col]
         int[][] logicalBoard = transpose(visualBoard);
-        Map gameMap = new Map(logicalBoard);
+        gameMap = new Map(logicalBoard);
         gameMap.setCyclic(false);
 
-        // --- 5. Game Variables ---
-        int pX = startPx;
-        int pY = startPy;
-
-        int ghostX = startGx;
-        int ghostY = startGy;
-
-        int score = 0;
-        boolean isRunning = true;
-
-        // --- 6. Init Display ---
-        GameDisplay display = new GameDisplay();
-        display.initCanvas(w, h);
-
-        // --- 7. Game Loop ---
-        while (isRunning) {
-            // A. Input Handling
-            int dx = 0, dy = 0;
-            if (StdDraw.isKeyPressed(KeyEvent.VK_UP))    dy = -1;
-            if (StdDraw.isKeyPressed(KeyEvent.VK_DOWN))  dy = 1;
-            if (StdDraw.isKeyPressed(KeyEvent.VK_LEFT))  dx = -1;
-            if (StdDraw.isKeyPressed(KeyEvent.VK_RIGHT)) dx = 1;
-
-            // B. Player Movement
-            if (gameMap.getPixel(pX + dx, pY + dy) != 1) {
-                pX += dx;
-                pY += dy;
-            }
-
-            // C. Ghost AI (Internal GPS)
-            int[] nextMove = bfsGetNextStep(gameMap, ghostX, ghostY, pX, pY);
-
-            if (nextMove != null) {
-                ghostX = nextMove[0];
-                ghostY = nextMove[1];
-            } else {
-                // Fallback: Random move
-                int gDx = 0, gDy = 0;
-                if (Math.random() < 0.5) gDx = (Math.random() < 0.5) ? 1 : -1;
-                else gDy = (Math.random() < 0.5) ? 1 : -1;
-
-                if (gameMap.getPixel(ghostX + gDx, ghostY + gDy) != 1) {
-                    ghostX += gDx;
-                    ghostY += gDy;
-                }
-            }
-
-            // D. Game Rules
-            int currentCell = gameMap.getPixel(pX, pY);
-
-            // Eating
-            if (currentCell == 2 || currentCell == 3) {
-                score++;
-                gameMap.setPixel(pX, pY, 0);
-                visualBoard[pY][pX] = 0;
-                System.out.println("Score: " + score);
-            }
-
-            // Collision
-            if (pX == ghostX && pY == ghostY) {
-                System.out.println("GAME OVER! Ghost caught Player.");
-                score -= 10;
-                // Optional: Reset positions
-                pX = startPx;
-                pY = startPy;
-                ghostX = startGx;
-                ghostY = startGy;
-            }
-
-            // E. Rendering
-            display.drawBoard(visualBoard, 1);
-            display.drawPlayer(pX, pY, playerSkin, w, h);
-            display.drawGhost(ghostX, ghostY, ghostSkin, w, h);
-
-            StdDraw.setPenColor(255, 255, 255);
-            StdDraw.textLeft(0.05, 0.95, "Score: " + score);
-
-            StdDraw.show(200);
-        }
+        System.out.println("Level Loaded. Pellets: " + pelletsLeft);
     }
 
-    /**
-     * Internal BFS to guarantee pathfinding works.
-     * Returns int[]{nextX, nextY} or null if no path.
-     */
     private static int[] bfsGetNextStep(Map map, int startX, int startY, int targetX, int targetY) {
         if (startX == targetX && startY == targetY) return null;
 
@@ -183,9 +222,7 @@ public class MyGameController {
                 break;
             }
 
-            // Directions: Up, Down, Left, Right
             int[][] dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
-
             for (int[] d : dirs) {
                 int nx = cx + d[0];
                 int ny = cy + d[1];
