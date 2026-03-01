@@ -1,45 +1,39 @@
 package assignments.Ex3.mypacmangame.display;
 
 import exe.ex3.game.StdDraw;
+import java.awt.event.KeyEvent;
 
 public class GameDisplay {
 
-    /**
-     * Minimalist initialization to avoid any JAR conflicts.
-     */
     public void initCanvas(int width, int height) {
+        // 1. Set canvas size (0 arguments - verified)
         StdDraw.setCanvasSize();
-        // We are NOT calling setXscale to prevent the "blue screen" loop.
+
+        // 2. We DO NOT call setXscale/setYscale.
+        // We accept the default 0.0 to 1.0 range to avoid JAR errors.
+
+        // 3. Enable Double Buffering (Passing 0 as verified by your error log)
+        try {
+            StdDraw.enableDoubleBuffering(0);
+        } catch (Exception e) {
+            System.out.println("Warning: Could not enable double buffering.");
+        }
     }
 
-    /**
-     * Converts a String position "x,y" to an integer array [x, y].
-     * Part of the requested 2D mapping logic.
-     */
-    public int[] pos2Index(String pos) {
-        if (pos == null || !pos.contains(",")) return new int[]{0, 0};
-        String[] parts = pos.split(",");
-        return new int[]{Integer.parseInt(parts[0]), Integer.parseInt(parts[1])};
-    }
-
-    /**
-     * Renders the game world using manual normalization.
-     */
     public void drawBoard(int[][] board, int level) {
         int height = board.length;
         int width = board[0].length;
 
-        // 1. Draw Background (Center: 0.5, 0.5 | Radius: 0.5, 0.5)
+        // Draw Background (Standard 0.0-1.0 coordinates)
         StdDraw.setPenColor(10, 10, 30);
         StdDraw.filledRectangle(0.5, 0.5, 0.5, 0.5);
 
-        // 2. Iterate and Draw
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-
-                // Normalization Math: (index + 0.5) / total
+                // MANUAL NORMALIZATION: Convert Grid(x,y) to Screen(0.0-1.0)
                 double drawX = (x + 0.5) / width;
-                double drawY = (height - y - 0.5) / height;
+                // Invert Y because grid (0,0) is top-left, but StdDraw (0,0) is bottom-left
+                double drawY = (height - 1 - y + 0.5) / height;
 
                 double halfW = 0.5 / width;
                 double halfH = 0.5 / height;
@@ -48,48 +42,48 @@ public class GameDisplay {
                     try {
                         StdDraw.picture(drawX, drawY, "wall.png", halfW * 2, halfH * 2);
                     } catch (Exception e) {
-                        StdDraw.setPenColor(0, 150, 255);
-                        StdDraw.filledRectangle(drawX, drawY, halfW * 0.9, halfH * 0.9);
+                        // Fallback: Blue Wall
+                        StdDraw.setPenColor(0, 100, 255);
+                        StdDraw.filledRectangle(drawX, drawY, halfW * 0.95, halfH * 0.95);
+                        // Inner black box to create "hollow" wall effect
+                        StdDraw.setPenColor(0, 0, 0);
+                        StdDraw.filledRectangle(drawX, drawY, halfW * 0.8, halfH * 0.8);
                     }
                 } else if (board[y][x] == 2) {
                     StdDraw.setPenColor(0, 255, 127);
-                    StdDraw.filledRectangle(drawX, drawY, halfW / 5, halfH / 5);
+                    StdDraw.filledRectangle(drawX, drawY, halfW / 4, halfH / 4);
                 } else if (board[y][x] == 3) {
                     try {
-                        // Drawing high-res Apple with padding (0.8 scale)
-                        StdDraw.picture(drawX, drawY, "apple.png", halfW * 1.6, halfH * 1.6);
+                        StdDraw.picture(drawX, drawY, "apple.png", halfW * 1.5, halfH * 1.5);
                     } catch (Exception e) {
-                        StdDraw.setPenColor(255, 50, 50);
-                        StdDraw.filledRectangle(drawX, drawY, halfW / 3, halfH / 3);
+                        StdDraw.setPenColor(200, 0, 0);
+                        StdDraw.filledRectangle(drawX, drawY, halfW / 2, halfH / 2);
                     }
                 }
             }
         }
     }
 
-    /**
-     * Draws the player using manual coordinate mapping.
-     */
-    public void drawPlayer(String pos, String skinFileName, int boardW, int boardH) {
-        int[] index = pos2Index(pos);
-        int x = index[0];
-        int y = index[1];
-
+    public void drawPlayer(int x, int y, String skin, int boardW, int boardH) {
+        // Same Manual Normalization logic for the player
         double drawX = (x + 0.5) / boardW;
-        double drawY = (boardH - y - 0.5) / boardH;
+        double drawY = (boardH - 1 - y + 0.5) / boardH;
+
+        double sizeW = 1.0 / boardW;
+        double sizeH = 1.0 / boardH;
 
         try {
-            // Sharper rendering using exact 0.85 grid coverage
-            StdDraw.picture(drawX, drawY, skinFileName, (1.0/boardW) * 0.85, (1.0/boardH) * 0.85);
+            StdDraw.picture(drawX, drawY, skin, sizeW * 0.85, sizeH * 0.85);
         } catch (Exception e) {
             StdDraw.setPenColor(255, 255, 0);
-            StdDraw.filledRectangle(drawX, drawY, 0.02, 0.02);
+            StdDraw.filledRectangle(drawX, drawY, sizeW / 3, sizeH / 3);
         }
     }
 
     public static void main(String[] args) {
         GameDisplay display = new GameDisplay();
-        int[][] testBoard = {
+
+        int[][] board = {
                 {1, 1, 1, 1, 1, 1, 1, 1, 1},
                 {1, 2, 2, 2, 3, 2, 2, 2, 1},
                 {1, 2, 1, 1, 1, 1, 1, 2, 1},
@@ -97,8 +91,33 @@ public class GameDisplay {
                 {1, 1, 1, 1, 1, 1, 1, 1, 1}
         };
 
-        display.initCanvas(testBoard[0].length, testBoard.length);
-        display.drawBoard(testBoard, 1);
-        display.drawPlayer("4,3", "morty.png", testBoard[0].length, testBoard.length);
+        int pX = 4;
+        int pY = 3;
+
+        display.initCanvas(board[0].length, board.length);
+
+        // === MOVEMENT LOOP ===
+        while (true) {
+            // 1. INPUT HANDLING
+            if (StdDraw.isKeyPressed(KeyEvent.VK_UP)) {
+                if (board[pY - 1][pX] != 1) pY--;
+            }
+            if (StdDraw.isKeyPressed(KeyEvent.VK_DOWN)) {
+                if (board[pY + 1][pX] != 1) pY++;
+            }
+            if (StdDraw.isKeyPressed(KeyEvent.VK_LEFT)) {
+                if (board[pY][pX - 1] != 1) pX--;
+            }
+            if (StdDraw.isKeyPressed(KeyEvent.VK_RIGHT)) {
+                if (board[pY][pX + 1] != 1) pX++;
+            }
+
+            // 2. RENDERING
+            display.drawBoard(board, 1);
+            display.drawPlayer(pX, pY, "morty.png", board[0].length, board.length);
+
+            // 3. SHOW FRAME (Passing 150ms as required by your JAR)
+            StdDraw.show(150);
+        }
     }
 }
