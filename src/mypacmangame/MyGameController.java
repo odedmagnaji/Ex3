@@ -6,18 +6,20 @@ import exe.ex3.game.StdDraw;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.awt.Color; // Attempting standard color if library supports, else we use RGB
 
 public class MyGameController {
 
+    // Global Game State
     private static int score = 0;
     private static int lives = 3;
     private static int currentLevelIndex = 0;
     private static int pelletsLeft = 0;
 
+    // Entities
     private static int pX, pY, startPx, startPy;
     private static int ghostX, ghostY, startGx, startGy;
 
+    // Map & Display
     private static Map gameMap;
     private static int[][] visualBoard;
     private static GameDisplay display;
@@ -26,6 +28,7 @@ public class MyGameController {
 
     public static void main(String[] args) {
 
+        // --- 1. Define Levels ---
         String[] levels = {
                 "###########\n" +
                         "#M.......R#\n" +
@@ -50,19 +53,18 @@ public class MyGameController {
                         "###################"
         };
 
-        // --- Init ---
+        // --- 2. Init ---
         loadLevel(levels[currentLevelIndex]);
 
         display = new GameDisplay();
         display.initCanvas(visualBoard[0].length, visualBoard.length);
 
-        // Start Logic
-        System.out.println("GAME STARTED. PRESS SPACE TO BEGIN.");
-        waitForSpace();
+        // ** Start Screen **
+        waitForSpace("READY? PRESS SPACE");
 
         boolean isRunning = true;
 
-        // --- Main Loop ---
+        // --- 3. Main Loop ---
         while (isRunning) {
             // A. Input
             int dx = 0, dy = 0;
@@ -105,77 +107,107 @@ public class MyGameController {
             drawGameScene();
             StdDraw.show(120);
 
-            // F. CHECK WIN
+            // F. CHECK WIN (Level Complete)
             if (pelletsLeft <= 0) {
-                System.out.println("LEVEL COMPLETE!");
+                showPopupMessage("LEVEL COMPLETE!");
+                StdDraw.show(1500);
+
                 currentLevelIndex++;
                 if (currentLevelIndex < levels.length) {
                     loadLevel(levels[currentLevelIndex]);
                     display.initCanvas(visualBoard[0].length, visualBoard.length);
-                    System.out.println("NEXT LEVEL LOADED. PRESS SPACE.");
-                    waitForSpace();
+
+                    waitForSpace("NEXT LEVEL! PRESS SPACE");
                 } else {
-                    System.out.println("YOU WIN! FINAL SCORE: " + score);
-                    StdDraw.show(3000);
+                    showPopupMessage("YOU WIN! SCORE: " + score);
+                    StdDraw.show(4000);
                     isRunning = false;
                 }
             }
 
-            // G. CHECK LOSS
+            // G. CHECK LOSS (Collision)
             if (pX == ghostX && pY == ghostY) {
                 lives--;
-                System.out.println("HIT! LIVES LEFT: " + lives);
 
-                // Force Draw overlap
+                // 1. Force Draw overlap so user SEES Rick touching Morty
                 drawGameScene();
                 StdDraw.show(500);
 
+                // 2. Show Message
+                showPopupMessage("OOPS! HIT!");
+                StdDraw.show(1500);
+
                 if (lives > 0) {
+                    // Reset positions
                     pX = startPx;
                     pY = startPy;
                     ghostX = startGx;
                     ghostY = startGy;
 
-                    System.out.println("RESETTING POSITIONS. PRESS SPACE.");
-                    waitForSpace();
+                    waitForSpace("PRESS SPACE TO CONTINUE");
                 } else {
-                    System.out.println("GAME OVER");
-                    StdDraw.show(3000);
+                    showPopupMessage("GAME OVER");
+                    StdDraw.show(4000);
                     isRunning = false;
                 }
             }
         }
     }
 
+    /**
+     * Draws the Board, Player, Ghost, and HUD.
+     */
     private static void drawGameScene() {
         // 1. Draw Maze & Entities
         display.drawBoard(visualBoard, 1);
         display.drawPlayer(pX, pY, playerSkin, visualBoard[0].length, visualBoard.length);
         display.drawGhost(ghostX, ghostY, ghostSkin, visualBoard[0].length, visualBoard.length);
 
-        // 2. Simple HUD
+        // 2. Draw HUD (Top Bar)
         double w = visualBoard[0].length;
+        double h = visualBoard.length;
 
-        // Just text, no boxes (Simple attempt)
-        StdDraw.setPenColor(255, 255, 255); // White
-        StdDraw.text(w * 0.2, 0.5, "Score: " + score, 0);
+        // Black Bar at top
+        StdDraw.setPenColor(0, 0, 0);
+        StdDraw.filledRectangle(w / 2.0, h - 0.4, w / 2.0, 0.5);
 
-        StdDraw.setPenColor(0, 255, 255); // Cyan
-        StdDraw.text(w * 0.8, 0.5, "Lives: " + lives, 0);
+        // Score (Left, White)
+        StdDraw.setPenColor(255, 255, 255);
+        StdDraw.text(w * 0.2, h - 0.4, "Score: " + score, 0);
+
+        // Lives (Right, Cyan)
+        StdDraw.setPenColor(0, 255, 255);
+        StdDraw.text(w * 0.8, h - 0.4, "Lives: " + lives, 0);
     }
 
-    private static void waitForSpace() {
-        // Debounce / Clear buffer
+    /**
+     * Shows a popup message over the game.
+     */
+    private static void showPopupMessage(String text) {
+        drawGameScene();
+
+        double w = visualBoard[0].length;
+        double h = visualBoard.length;
+
+        // Draw Box (Black with Yellow text)
+        StdDraw.setPenColor(0, 0, 0);
+        StdDraw.filledRectangle(w / 2.0, h / 2.0, w / 2.5, 1.0);
+
+        // Draw Text (Yellow)
+        StdDraw.setPenColor(255, 255, 0);
+        StdDraw.text(w / 2.0, h / 2.0, text, 0);
+
+        StdDraw.show(20);
+    }
+
+    /**
+     * Freezes game loop until SPACE is pressed.
+     */
+    private static void waitForSpace(String message) {
         while(StdDraw.hasNextKeyTyped()) { StdDraw.nextKeyTyped(); }
 
         while (!StdDraw.isKeyPressed(KeyEvent.VK_SPACE)) {
-            drawGameScene();
-
-            // Draw "PRESS SPACE" in center
-            StdDraw.setPenColor(255, 255, 0); // Yellow
-            StdDraw.text(visualBoard[0].length / 2.0, visualBoard.length / 2.0, "PRESS SPACE", 0);
-
-            StdDraw.show(50);
+            showPopupMessage(message);
         }
         StdDraw.show(200);
     }
@@ -191,37 +223,66 @@ public class MyGameController {
             String row = rows[y];
             for (int x = 0; x < w; x++) {
                 char c = (x < row.length()) ? row.charAt(x) : ' ';
-                if (c == '#') visualBoard[y][x] = 1;
-                else if (c == '.') { visualBoard[y][x] = 2; pelletsLeft++; }
-                else if (c == 'A') { visualBoard[y][x] = 3; pelletsLeft++; }
-                else if (c == 'M') { visualBoard[y][x] = 0; startPx=x; startPy=y; pX=x; pY=y; }
-                else if (c == 'R') { visualBoard[y][x] = 0; startGx=x; startGy=y; ghostX=x; ghostY=y; }
-                else visualBoard[y][x] = 0;
+
+                if (c == '#') {
+                    visualBoard[y][x] = 1;
+                } else if (c == '.') {
+                    visualBoard[y][x] = 2;
+                    pelletsLeft++;
+                } else if (c == 'A') {
+                    visualBoard[y][x] = 3;
+                    pelletsLeft++;
+                } else if (c == 'M') {
+                    visualBoard[y][x] = 0;
+                    startPx = x; startPy = y;
+                    pX = x; pY = y;
+                } else if (c == 'R') {
+                    visualBoard[y][x] = 0;
+                    startGx = x; startGy = y;
+                    ghostX = x; ghostY = y;
+                } else {
+                    visualBoard[y][x] = 0;
+                }
             }
         }
+
         int[][] logicalBoard = transpose(visualBoard);
         gameMap = new Map(logicalBoard);
         gameMap.setCyclic(false);
     }
 
-    private static int[] bfsGetNextStep(Map map, int startX, int startY, int targetX, int targetY) {
+    // --- CHANGED TO PUBLIC FOR TESTING ---
+    public static int[] bfsGetNextStep(Map map, int startX, int startY, int targetX, int targetY) {
         if (startX == targetX && startY == targetY) return null;
+
         int width = map.getWidth();
         int height = map.getHeight();
         boolean[][] visited = new boolean[width][height];
         int[][] parent = new int[width][height];
-        for(int i=0; i<width; i++) for(int j=0; j<height; j++) parent[i][j] = -1;
+        for(int i=0; i<width; i++)
+            for(int j=0; j<height; j++) parent[i][j] = -1;
+
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startX, startY});
         visited[startX][startY] = true;
+
         boolean found = false;
+
         while (!queue.isEmpty()) {
             int[] curr = queue.poll();
-            int cx = curr[0]; int cy = curr[1];
-            if (cx == targetX && cy == targetY) { found = true; break; }
+            int cx = curr[0];
+            int cy = curr[1];
+
+            if (cx == targetX && cy == targetY) {
+                found = true;
+                break;
+            }
+
             int[][] dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
             for (int[] d : dirs) {
-                int nx = cx + d[0]; int ny = cy + d[1];
+                int nx = cx + d[0];
+                int ny = cy + d[1];
+
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
                     if (map.getPixel(nx, ny) != 1 && !visited[nx][ny]) {
                         visited[nx][ny] = true;
@@ -231,18 +292,29 @@ public class MyGameController {
                 }
             }
         }
+
         if (!found) return null;
-        int currX = targetX; int currY = targetY;
+
+        int currX = targetX;
+        int currY = targetY;
+
         while (true) {
             int pVal = parent[currX][currY];
             if (pVal == -1) return null;
-            int pX = pVal / 1000; int pY = pVal % 1000;
-            if (pX == startX && pY == startY) return new int[]{currX, currY};
-            currX = pX; currY = pY;
+
+            int pX = pVal / 1000;
+            int pY = pVal % 1000;
+
+            if (pX == startX && pY == startY) {
+                return new int[]{currX, currY};
+            }
+            currX = pX;
+            currY = pY;
         }
     }
 
-    private static int[][] transpose(int[][] matrix) {
+    // --- CHANGED TO PUBLIC FOR TESTING ---
+    public static int[][] transpose(int[][] matrix) {
         int rows = matrix.length;
         int cols = matrix[0].length;
         int[][] transposed = new int[cols][rows];
