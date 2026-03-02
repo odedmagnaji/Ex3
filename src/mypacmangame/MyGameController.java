@@ -49,8 +49,7 @@ public class MyGameController {
         display = new GameDisplay();
         loadLevel(levels[currentLevelIndex]);
 
-        // אתחול הקנבס והגדרת סקאלה מנורמלת (0.0 עד 1.0)
-        // שימוש ב-3 פרמטרים (min, max, margin) למניעת שגיאות קומפילציה
+        // אתחול קנבס והגדרת סקאלה 0-1 (תואם ל-GameDisplay ולספרייה שלך)
         display.initCanvas(visualBoard[0].length, visualBoard.length);
         StdDraw.setXscale(0.0, 1.0, 0);
         StdDraw.setYscale(0.0, 1.0, 0);
@@ -73,11 +72,19 @@ public class MyGameController {
                 // תפוחים מהירים: כל 30 פריימים
                 if (frameCount % 30 == 0) { spawnRandomApple(); }
 
+                // תזוזת רוחות
                 int speedDelay = Math.max(2, 5 - currentLevelIndex);
                 if (frameCount % speedDelay == 0) { moveGhosts(isPowerUpActive); }
 
+                // --- לוגיקה משודרגת ליצירת רוחות ---
+                // שלבים 3 ו-4 (אינדקס 2+) -> קצב מהיר (כל 90 פריימים)
+                // שלבים 1 ו-2 -> קצב רגיל (כל 150 פריימים)
+                int spawnRate = (currentLevelIndex >= 2) ? 90 : 150;
                 int maxGhosts = currentLevelIndex + 3;
-                if (frameCount % 150 == 0 && activeGhosts.size() < maxGhosts) { spawnGhost(); }
+
+                if (frameCount % spawnRate == 0 && activeGhosts.size() < maxGhosts) {
+                    spawnGhost();
+                }
 
                 handleEating();
 
@@ -98,7 +105,7 @@ public class MyGameController {
                 drawGameScene();
                 if (isPaused) {
                     StdDraw.setPenColor(255, 255, 0);
-                    // טקסט עם 4 פרמטרים (האחרון הוא זווית 0.0)
+                    // טקסט עם 4 פרמטרים (x, y, text, angle)
                     StdDraw.text(0.5, 0.5, "PAUSED", 0.0);
                 }
                 StdDraw.show(80);
@@ -189,9 +196,13 @@ public class MyGameController {
         }
         gameMap = new Map(transpose(visualBoard));
 
-        spawnGhost();
-        if (currentLevelIndex >= 2) spawnGhost();
-        if (currentLevelIndex >= 3) spawnGhost();
+        // --- לוגיקה ליצירת רוחות בהתחלה ---
+        spawnGhost(); // תמיד לפחות אחת
+
+        // בשלבים 3 ו-4 מתחילים עם שתיים
+        if (currentLevelIndex >= 2) {
+            spawnGhost();
+        }
     }
 
     private static void spawnGhost() {
@@ -218,7 +229,7 @@ public class MyGameController {
     }
 
     private static void drawGameScene() {
-        // רקע שחור מלא (0-1)
+        // רקע שחור (0-1)
         StdDraw.setPenColor(0, 0, 0);
         StdDraw.filledRectangle(0.5, 0.5, 0.5, 0.5);
 
@@ -235,15 +246,14 @@ public class MyGameController {
             if (now < powerUpEndTime && g.getStatus() == 1) {
                 currentSkin = ghostSkin.equals("rick.png") ? "rick2.png" : "greenghost.png";
 
-                // ציור הילה - חישוב מנורמל (0-1)
+                // ציור הילה (חישוב ידני מנורמל ל-0-1)
                 double drawX = (g.getX() + 0.5) / boardW;
                 double drawY = (boardH - 1 - g.getY() + 0.5) / boardH;
                 double halfW = (0.5 / boardW) * 0.9;
                 double halfH = (0.5 / boardH) * 0.9;
 
                 StdDraw.setPenColor(0, 255, 255);
-                // שימוש ב-filledRectangle עם 4 פרמטרים (ללא זווית)
-                StdDraw.filledRectangle(drawX, drawY, halfW, halfH);
+                StdDraw.filledRectangle(drawX, drawY, halfW, halfH); // ללא זווית (4 פרמטרים)
 
             } else if (now >= powerUpEndTime) {
                 g.setStatus(0);
@@ -272,11 +282,10 @@ public class MyGameController {
 
             if (new File(TITLE_IMG).exists()) {
                 try {
-                    // תיקון: שימוש ב-5 פרמטרים (ללא זווית אם זה נכשל בקומפילציה, אבל נראה שהספרייה תומכת ב-5)
-                    // אם זה יקרוס שוב, נשתמש ב-3 פרמטרים
+                    // תיקון: 5 פרמטרים (בלי זווית בסוף)
                     StdDraw.picture(0.5, 0.75, TITLE_IMG, 0.6, 0.3);
                 } catch(Exception e) {
-                    // Fallback
+                    // התעלמות
                 }
             }
 
@@ -297,6 +306,7 @@ public class MyGameController {
 
         if (new File(imgPath).exists()) {
             try {
+                // תיקון: 5 פרמטרים
                 StdDraw.picture(0.5, 0.5, imgPath, 0.7, 0.5);
             } catch(Exception e) {}
         }
