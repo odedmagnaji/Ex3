@@ -4,16 +4,17 @@ import exe.ex3.game.GhostCL;
 
 public class GhostEntity implements GhostCL {
 
+    public static final int STATUS_NORMAL = 0;
+    public static final int STATUS_FRIGHTENED = 1;
+
     private String position;
     private int status;
     private int type;
-    private int direction;
 
     public GhostEntity(String position, int status, int type) {
         this.position = position;
         this.status = status;
         this.type = type;
-        this.direction = 1;
     }
 
     public void setPosition(String position) {
@@ -24,25 +25,26 @@ public class GhostEntity implements GhostCL {
         this.status = status;
     }
 
-    public void setDirection(int direction) {
-        this.direction = direction;
+    public int getX() {
+        try {
+            return Integer.parseInt(this.position.split(",")[0]);
+        } catch (Exception e) { return 0; }
     }
 
-    public String getGhostPosition() {
-        return this.position;
+    public int getY() {
+        try {
+            return Integer.parseInt(this.position.split(",")[1]);
+        } catch (Exception e) { return 0; }
     }
 
-    public int getGhostStatus() {
+    @Override
+    public int getStatus() {
         return this.status;
-    }
-
-    public int getGhostType() {
-        return this.type;
     }
 
     @Override
     public int getType() {
-        return 0;
+        return this.type;
     }
 
     @Override
@@ -52,26 +54,11 @@ public class GhostEntity implements GhostCL {
 
     @Override
     public String getInfo() {
-        return "";
+        return "Type:" + type + ", Status:" + status + ", Pos:" + position;
     }
 
     @Override
     public double remainTimeAsEatable(int i) {
-        return 0;
+        return (status == STATUS_FRIGHTENED) ? 6.0 : 0.0;
     }
-
-    @Override
-    public int getStatus() {
-        return 0;
-    }
-
-    // =========================================================
-    // DO NOT COPY THE RED METHODS. INSTEAD, DO THIS:
-    // 1. Hover over the red 'GhostEntity' class name at the top.
-    // 2. Press Alt + Enter -> "Implement methods" -> OK.
-    // 3. Inside the new methods it created at the bottom, write:
-    //    return this.status; (for the status method)
-    //    return this.type;   (for the type method)
-    //    return this.direction; (for the direction method, if any)
-    // =========================================================
 }
