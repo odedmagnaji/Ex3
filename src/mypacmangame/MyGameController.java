@@ -23,8 +23,14 @@ public class MyGameController {
     private static Map gameMap;
     private static int[][] visualBoard;
     private static GameDisplay display;
+
+    // Assets
     private static String playerSkin = "morty.png";
     private static String ghostSkin = "rick.png";
+    // SOUND FILES (Make sure these exist in your project folder)
+    private static String soundEat = "eat.wav";
+    private static String soundHit = "hit.wav";
+    private static String soundWin = "win.wav";
 
     public static void main(String[] args) {
 
@@ -101,6 +107,9 @@ public class MyGameController {
                 pelletsLeft--;
                 gameMap.setPixel(pX, pY, 0);
                 visualBoard[pY][pX] = 0;
+
+                // PLAY SOUND: EAT
+                AudioPlayer.playSound(soundEat);
             }
 
             // E. Render Frame
@@ -109,6 +118,9 @@ public class MyGameController {
 
             // F. CHECK WIN (Level Complete)
             if (pelletsLeft <= 0) {
+                // PLAY SOUND: WIN
+                AudioPlayer.playSound(soundWin);
+
                 showPopupMessage("LEVEL COMPLETE!");
                 StdDraw.show(1500);
 
@@ -128,8 +140,10 @@ public class MyGameController {
             // G. CHECK LOSS (Collision)
             if (pX == ghostX && pY == ghostY) {
                 lives--;
+                // PLAY SOUND: HIT
+                AudioPlayer.playSound(soundHit);
 
-                // 1. Force Draw overlap so user SEES Rick touching Morty
+                // 1. Force Draw overlap so user SEES collision
                 drawGameScene();
                 StdDraw.show(500);
 
@@ -251,7 +265,7 @@ public class MyGameController {
         gameMap.setCyclic(false);
     }
 
-    // --- CHANGED TO PUBLIC FOR TESTING ---
+    // PUBLIC FOR TESTING
     public static int[] bfsGetNextStep(Map map, int startX, int startY, int targetX, int targetY) {
         if (startX == targetX && startY == targetY) return null;
 
@@ -313,7 +327,7 @@ public class MyGameController {
         }
     }
 
-    // --- CHANGED TO PUBLIC FOR TESTING ---
+    // PUBLIC FOR TESTING
     public static int[][] transpose(int[][] matrix) {
         int rows = matrix.length;
         int cols = matrix[0].length;
