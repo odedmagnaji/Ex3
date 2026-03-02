@@ -6,20 +6,18 @@ import exe.ex3.game.StdDraw;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.awt.Color; // Attempting standard color if library supports, else we use RGB
 
 public class MyGameController {
 
-    // Global Game State
     private static int score = 0;
     private static int lives = 3;
     private static int currentLevelIndex = 0;
     private static int pelletsLeft = 0;
 
-    // Entities
     private static int pX, pY, startPx, startPy;
     private static int ghostX, ghostY, startGx, startGy;
 
-    // Map & Display
     private static Map gameMap;
     private static int[][] visualBoard;
     private static GameDisplay display;
@@ -28,16 +26,13 @@ public class MyGameController {
 
     public static void main(String[] args) {
 
-        // --- 1. Define Levels ---
         String[] levels = {
-                // Level 1: Easy
                 "###########\n" +
                         "#M.......R#\n" +
                         "#.#######.#\n" +
                         "#.........#\n" +
                         "###########",
 
-                // Level 2: Medium
                 "###################\n" +
                         "#M......#.........#\n" +
                         "#.##.##.#.##.####.#\n" +
@@ -46,7 +41,6 @@ public class MyGameController {
                         "#.......#.........#\n" +
                         "###################",
 
-                // Level 3: Hard
                 "###################\n" +
                         "#M#...#...#...#..R#\n" +
                         "#.#.#.#.#.#.#.#.#.#\n" +
@@ -56,15 +50,19 @@ public class MyGameController {
                         "###################"
         };
 
-        // --- 2. Initialize First Level ---
+        // --- Init ---
         loadLevel(levels[currentLevelIndex]);
 
         display = new GameDisplay();
         display.initCanvas(visualBoard[0].length, visualBoard.length);
 
+        // Start Logic
+        System.out.println("GAME STARTED. PRESS SPACE TO BEGIN.");
+        waitForSpace();
+
         boolean isRunning = true;
 
-        // --- 3. Main Game Loop ---
+        // --- Main Loop ---
         while (isRunning) {
             // A. Input
             int dx = 0, dy = 0;
@@ -94,38 +92,43 @@ public class MyGameController {
                 }
             }
 
-            // D. Logic: Eating & Level Complete
+            // D. Logic: Eating
             int currentCell = gameMap.getPixel(pX, pY);
             if (currentCell == 2 || currentCell == 3) {
                 score++;
                 pelletsLeft--;
                 gameMap.setPixel(pX, pY, 0);
                 visualBoard[pY][pX] = 0;
-                System.out.println("Score: " + score + " | Left: " + pelletsLeft);
             }
 
-            // CHECK WIN CONDITION
+            // E. Render Frame
+            drawGameScene();
+            StdDraw.show(120);
+
+            // F. CHECK WIN
             if (pelletsLeft <= 0) {
                 System.out.println("LEVEL COMPLETE!");
                 currentLevelIndex++;
-
                 if (currentLevelIndex < levels.length) {
                     loadLevel(levels[currentLevelIndex]);
                     display.initCanvas(visualBoard[0].length, visualBoard.length);
-
-                    // Fixed: Using show instead of pause
-                    StdDraw.show(1000);
+                    System.out.println("NEXT LEVEL LOADED. PRESS SPACE.");
+                    waitForSpace();
                 } else {
-                    System.out.println("YOU WIN THE GAME!");
-                    System.out.println("Final Score: " + score);
+                    System.out.println("YOU WIN! FINAL SCORE: " + score);
+                    StdDraw.show(3000);
                     isRunning = false;
                 }
             }
 
-            // CHECK LOSS CONDITION
+            // G. CHECK LOSS
             if (pX == ghostX && pY == ghostY) {
                 lives--;
-                System.out.println("HIT! Lives left: " + lives);
+                System.out.println("HIT! LIVES LEFT: " + lives);
+
+                // Force Draw overlap
+                drawGameScene();
+                StdDraw.show(500);
 
                 if (lives > 0) {
                     pX = startPx;
@@ -133,26 +136,48 @@ public class MyGameController {
                     ghostX = startGx;
                     ghostY = startGy;
 
-                    // Fixed: Using show instead of pause
-                    StdDraw.show(1000);
+                    System.out.println("RESETTING POSITIONS. PRESS SPACE.");
+                    waitForSpace();
                 } else {
                     System.out.println("GAME OVER");
+                    StdDraw.show(3000);
                     isRunning = false;
                 }
             }
-
-            // E. Render
-            if (isRunning) {
-                display.drawBoard(visualBoard, 1);
-                display.drawPlayer(pX, pY, playerSkin, visualBoard[0].length, visualBoard.length);
-                display.drawGhost(ghostX, ghostY, ghostSkin, visualBoard[0].length, visualBoard.length);
-
-                StdDraw.setPenColor(255, 255, 255);
-                StdDraw.textLeft(0.05, 0.95, "Lvl: " + (currentLevelIndex+1) + " | Score: " + score + " | Lives: " + lives);
-
-                StdDraw.show(200);
-            }
         }
+    }
+
+    private static void drawGameScene() {
+        // 1. Draw Maze & Entities
+        display.drawBoard(visualBoard, 1);
+        display.drawPlayer(pX, pY, playerSkin, visualBoard[0].length, visualBoard.length);
+        display.drawGhost(ghostX, ghostY, ghostSkin, visualBoard[0].length, visualBoard.length);
+
+        // 2. Simple HUD
+        double w = visualBoard[0].length;
+
+        // Just text, no boxes (Simple attempt)
+        StdDraw.setPenColor(255, 255, 255); // White
+        StdDraw.text(w * 0.2, 0.5, "Score: " + score, 0);
+
+        StdDraw.setPenColor(0, 255, 255); // Cyan
+        StdDraw.text(w * 0.8, 0.5, "Lives: " + lives, 0);
+    }
+
+    private static void waitForSpace() {
+        // Debounce / Clear buffer
+        while(StdDraw.hasNextKeyTyped()) { StdDraw.nextKeyTyped(); }
+
+        while (!StdDraw.isKeyPressed(KeyEvent.VK_SPACE)) {
+            drawGameScene();
+
+            // Draw "PRESS SPACE" in center
+            StdDraw.setPenColor(255, 255, 0); // Yellow
+            StdDraw.text(visualBoard[0].length / 2.0, visualBoard.length / 2.0, "PRESS SPACE", 0);
+
+            StdDraw.show(50);
+        }
+        StdDraw.show(200);
     }
 
     private static void loadLevel(String levelStr) {
@@ -166,67 +191,37 @@ public class MyGameController {
             String row = rows[y];
             for (int x = 0; x < w; x++) {
                 char c = (x < row.length()) ? row.charAt(x) : ' ';
-
-                if (c == '#') {
-                    visualBoard[y][x] = 1;
-                } else if (c == '.') {
-                    visualBoard[y][x] = 2;
-                    pelletsLeft++;
-                } else if (c == 'A') {
-                    visualBoard[y][x] = 3;
-                    pelletsLeft++;
-                } else if (c == 'M') {
-                    visualBoard[y][x] = 0;
-                    startPx = x; startPy = y;
-                    pX = x; pY = y;
-                } else if (c == 'R') {
-                    visualBoard[y][x] = 0;
-                    startGx = x; startGy = y;
-                    ghostX = x; ghostY = y;
-                } else {
-                    visualBoard[y][x] = 0;
-                }
+                if (c == '#') visualBoard[y][x] = 1;
+                else if (c == '.') { visualBoard[y][x] = 2; pelletsLeft++; }
+                else if (c == 'A') { visualBoard[y][x] = 3; pelletsLeft++; }
+                else if (c == 'M') { visualBoard[y][x] = 0; startPx=x; startPy=y; pX=x; pY=y; }
+                else if (c == 'R') { visualBoard[y][x] = 0; startGx=x; startGy=y; ghostX=x; ghostY=y; }
+                else visualBoard[y][x] = 0;
             }
         }
-
         int[][] logicalBoard = transpose(visualBoard);
         gameMap = new Map(logicalBoard);
         gameMap.setCyclic(false);
-
-        System.out.println("Level Loaded. Pellets: " + pelletsLeft);
     }
 
     private static int[] bfsGetNextStep(Map map, int startX, int startY, int targetX, int targetY) {
         if (startX == targetX && startY == targetY) return null;
-
         int width = map.getWidth();
         int height = map.getHeight();
         boolean[][] visited = new boolean[width][height];
         int[][] parent = new int[width][height];
-        for(int i=0; i<width; i++)
-            for(int j=0; j<height; j++) parent[i][j] = -1;
-
+        for(int i=0; i<width; i++) for(int j=0; j<height; j++) parent[i][j] = -1;
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startX, startY});
         visited[startX][startY] = true;
-
         boolean found = false;
-
         while (!queue.isEmpty()) {
             int[] curr = queue.poll();
-            int cx = curr[0];
-            int cy = curr[1];
-
-            if (cx == targetX && cy == targetY) {
-                found = true;
-                break;
-            }
-
+            int cx = curr[0]; int cy = curr[1];
+            if (cx == targetX && cy == targetY) { found = true; break; }
             int[][] dirs = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
             for (int[] d : dirs) {
-                int nx = cx + d[0];
-                int ny = cy + d[1];
-
+                int nx = cx + d[0]; int ny = cy + d[1];
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
                     if (map.getPixel(nx, ny) != 1 && !visited[nx][ny]) {
                         visited[nx][ny] = true;
@@ -236,24 +231,14 @@ public class MyGameController {
                 }
             }
         }
-
         if (!found) return null;
-
-        int currX = targetX;
-        int currY = targetY;
-
+        int currX = targetX; int currY = targetY;
         while (true) {
             int pVal = parent[currX][currY];
             if (pVal == -1) return null;
-
-            int pX = pVal / 1000;
-            int pY = pVal % 1000;
-
-            if (pX == startX && pY == startY) {
-                return new int[]{currX, currY};
-            }
-            currX = pX;
-            currY = pY;
+            int pX = pVal / 1000; int pY = pVal % 1000;
+            if (pX == startX && pY == startY) return new int[]{currX, currY};
+            currX = pX; currY = pY;
         }
     }
 
