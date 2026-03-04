@@ -8,20 +8,25 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * JUnit test suite for Ex3Algo.
- * Validates pathfinding, geometry, and safety mechanisms for Level 4.
+ * JUnit test suite for the Ex3Algo class.
+ * This class validates the core logic used for Level 4 AI, including
+ * pathfinding, movement mechanics, and safety assessments.
  */
 public class Ex3AlgoTest {
 
     private Ex3Algo algo;
 
+    /**
+     * Initializes a new instance of the algorithm before each test case.
+     */
     @BeforeEach
     void setUp() {
         algo = new Ex3Algo();
     }
 
     /**
-     * Tests the parsing of coordinate strings received from the game server.
+     * Verifies that coordinate strings (e.g., "25, 12") received from the
+     * game server are correctly parsed into Point objects.
      */
     @Test
     void testExtractPosition() {
@@ -31,7 +36,8 @@ public class Ex3AlgoTest {
     }
 
     /**
-     * Validates movement logic, specifically the cyclic wrap-around mechanics of the board edges.
+     * Validates the neighbor calculation logic, specifically the cyclic
+     * wrap-around mechanics of the board edges.
      */
     @Test
     void testGetNeighborAndWrapAround() {
@@ -46,7 +52,8 @@ public class Ex3AlgoTest {
     }
 
     /**
-     * Ensures the algorithm correctly identifies opposite directions to prevent oscillation (ABAB movement).
+     * Ensures the algorithm correctly identifies opposite directions
+     * to prevent oscillation (moving back and forth between two cells).
      */
     @Test
     void testOpposite() {
@@ -57,7 +64,8 @@ public class Ex3AlgoTest {
     }
 
     /**
-     * Tests obstacle detection, ensuring Pac-Man cannot move into blue walls.
+     * Tests obstacle detection, ensuring that move legality is correctly
+     * assessed based on the board's color data (e.g., blue walls).
      */
     @Test
     void testIsLegal() {
@@ -70,7 +78,8 @@ public class Ex3AlgoTest {
     }
 
     /**
-     * Verifies that the center area (ghost house) is correctly identified as a restricted zone.
+     * Verifies that the restricted center area (ghost house) is correctly
+     * identified to prevent Pac-Man from entering.
      */
     @Test
     void testIsGhostHouse() {
@@ -81,7 +90,8 @@ public class Ex3AlgoTest {
     }
 
     /**
-     * Tests the core Breadth-First Search (BFS) logic to ensure it calculates paths around obstacles.
+     * Tests the core Breadth-First Search (BFS) logic to ensure it accurately
+     * calculates distances and navigates around obstacles.
      */
     @Test
     void testComputeBFS() {
@@ -102,7 +112,8 @@ public class Ex3AlgoTest {
     }
 
     /**
-     * Validates the Safe-Space counting mechanism used to avoid dead ends and traps.
+     * Validates the Safe-Space counting mechanism used to evaluate
+     * available movement area and avoid traps or dead ends.
      */
     @Test
     void testCountSafeSpace() {
