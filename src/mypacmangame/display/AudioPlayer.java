@@ -1,4 +1,4 @@
-package assignments.Ex3.mypacmangame;
+package assignments.Ex3.mypacmangame.display;
 
 import javax.sound.sampled.*;
 import java.io.File;
