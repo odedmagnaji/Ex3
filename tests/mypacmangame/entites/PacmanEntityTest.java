@@ -34,4 +34,19 @@ public class PacmanEntityTest {
         assertEquals(10, pacman.getScore(), "Score should be updated to 10.");
         assertEquals(2, pacman.getLives(), "Lives should be reduced to 2.");
     }
+
+    @Test
+    void testLivesBoundary() {
+        PacmanEntity pacman = new PacmanEntity("0,0");
+
+        // Lose all 3 lives
+        pacman.loseLife();
+        pacman.loseLife();
+        pacman.loseLife();
+        assertEquals(0, pacman.getLives(), "Lives should be 0 after losing 3 times.");
+
+        // Try to lose one more life (Edge Case)
+        pacman.loseLife();
+        assertEquals(0, pacman.getLives(), "Lives should not go below 0 (check logic safeguard).");
+    }
 }
