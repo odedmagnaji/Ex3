@@ -1,37 +1,61 @@
-# Ex3: Pac-Man - Object-Oriented Programming & Gaming 
+# Ex3: Pac-Man - From AI Algorithm to Full Game Integration
+**Ariel University, School of Computer Science, 2026**
 
-## 1. Architecture Overview
-This project implements a complete Pac-Man game, emphasizing Object-Oriented Programming, code reuse, and system integration. To ensure a clean design and maintainability, the project is structured into distinct modules, separating the game logic (server) from the algorithm and visualization (client).
+## 1. Task 1: The Pac-Man Algorithm (Ex3Algo)
+The primary goal of this stage was to design and implement an autonomous agent capable of winning Level 4 while avoiding ghosts.
 
-## 2. Server Layer (Game Engine)
-The server module is responsible for the core game mechanics and state management, operating independently of the graphical display.
-* **Main Responsibilities:**
-  * Managing the 2D grid board and entity coordinates.
-  * Handling ghost behaviors, spawning, and timers.
-  * Detecting collisions between Pac-Man, ghosts, and dots.
-  * Exposing a clean interface for the client to interact with.
+### Strategy & Logic for Level 4:
+To survive the high difficulty of Level 4, the algorithm utilizes a multi-layered strategic engine:
+* **Multi-Source BFS Danger Mapping**: Calculates the real-time distance from every dangerous ghost using a Breadth-First Search.
+* **Safe-Space Analysis**: Performs a reachability check (`countSafeSpace`) before every move to ensure Pac-Man doesn't enter dead-ends or corridors where it can be easily trapped.
+* **Dynamic Scoring Engine**: 
+    * **Pellet Gathering**: Prioritizes pink dots using a distance-weighted scoring system ($1 / distance$).
+    * **Hard Safety Filters**: Implements an "Escape Trigger" that overrides all objectives if a ghost breaches a critical safety radius.
+    * **Anti-Oscillation Logic**: Features a 2-step position memory (Anti-ABAB) to prevent repetitive back-and-forth movement.
 
-## 3. Client Layer (Visualization)
-This layer handles the user interface and graphical rendering using the StdDraw library.
-* **Main Responsibilities:** Rendering the board, updating entity positions visually, and managing the main game loop.
+---
 
-## 4. The Pac-Man Algorithm (Ex3Algo)
-The automatic gameplay is driven by an advanced strategic algorithm optimized for high-difficulty scenarios like Level 4. The AI utilizes a dynamic Weighted Scoring Engine and Safe-Space Analysis:
+## 2. Task 2: Game Server & Interface Implementation
+This stage involved building a complete game environment, providing artistic freedom to design the server-side logic and GUI.
 
-* **Global Danger Mapping:** Implements a Multi-Source BFS to calculate the true maze distance from all dangerous ghosts in real-time.
-* **Safe-Space Reachability:** Before every move, the algorithm simulates local mobility to ensure Pac-Man avoids dead-ends and corridors where interception is likely.
-* **Dynamic Decision Engine:**
-  * **Gathering:** Prioritizes pink dots using a distance-weighted scoring system.
-  * **Evasion:** Uses hard safety filters and exponential danger penalties to force escape routes when ghosts breach the safety radius.
-  * **Hunting:** Actively tracks and intercepts edible ghosts during power-up phases.
-* **Oscillation Control:** Features a 2-step position memory (Anti-ABAB) to eliminate repetitive back-and-forth movement and maintain momentum.
+### Server Side (Game Engine):
+The server manages the core game state and logic independently of the display:
+* **Board & Entity Management**: Uses `PacmanServer` to implement the `PacmanGame` interface, handling grid coordinates, wall collisions, and tracking `PacmanEntity` and `GhostEntity` states.
+* **Game Logic**: The `MyGameController` orchestrates the game loop, level transitions, and collision detection between the player, pellets, and ghosts.
 
-## 5. Testing Strategy
-Robustness is ensured through a comprehensive JUnit testing suite for both the client algorithm and the server implementation.
-* **Coverage:** Tests validate movement logic, pathfinding edge cases, and verify the algorithm successfully clears Level 4.
+### Graphical Interface & Extras ("Going Crazy"):
+The GUI was implemented using the `StdDraw` library with a customized "Rick and Morty" theme:
+* **Interactive Skin System**: A custom start screen allows players to select between different skins (Morty, Classic, or Pikachu) and ghost themes.
+* **Audio Integration**: An asynchronous `AudioPlayer` plays sound effects during gameplay.
+* **Visual Polish**: Edible ghosts feature a cyan "Power-Up Aura", and the HUD displays real-time score and lives.
 
-## 6. Build, Video, and Distribution
-The project is packaged for easy distribution via GitHub Releases.
-* **Executables:** Includes runnable JAR files (Ex3_2.jar for the client, Ex3_3.jar for full integration).
-* **Demonstration:** A short video (max 120 seconds) explaining the server-side implementation and demonstrating gameplay.
-* **Source Files:** Includes full source code (Ex3_all_src.zip) and documentation (Ex3_docs.zip).
+---
+
+## 3. Controls & Instructions
+| Action | Key / Input |
+| :--- | :--- |
+| **Start Game** | `SPACE` |
+| **Move Pac-Man (Manual)** | Arrow Keys |
+| **Pause Game** | `P` |
+| **Select Player Skin** | Keys `1`, `2`, `3` |
+| **Select Ghost Skin** | Keys `4`, `5` |
+
+---
+
+## 4. Testing & Project Structure
+* **JUnit Testing**: Comprehensive suites validate movement, pathfinding, and AI safety mechanisms.
+    * `Ex3AlgoTest`: Validates Level 4 strategy and navigation.
+    * `PacmanServerTest`: Ensures server-side integrity and movement rules.
+    * `MapTest`: Verifies core map algorithms and spatial logic.
+* **Project Layers**:
+    * `assignments.Ex3`: Core Map algorithms and AI.
+    * `mypacmangame.core`: Server implementation.
+    * `mypacmangame.entities`: Game entities.
+    * `mypacmangame.display`: Rendering and audio.
+
+---
+
+## 5. Deliverables
+* **Ex3_2.jar**: Client-side solution (AI running on external server).
+* **Ex3_3.jar**: Full solution (Client + Custom Server).
+* **Video**: 120-second demonstration of server implementation and gameplay.
