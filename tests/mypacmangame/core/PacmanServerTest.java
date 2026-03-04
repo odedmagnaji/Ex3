@@ -9,11 +9,16 @@ import assignments.Ex3.mypacmangame.entities.PacmanEntity;
 import exe.ex3.game.GhostCL;
 
 /**
- * Comprehensive tests for the PacmanServer logic.
- * Checks movement, collision with walls, boundaries, and initialization.
+ * JUnit test suite for the PacmanServer class.
+ * This class ensures that the game server correctly manages the board state,
+ * handles entity integration, and strictly enforces movement rules and boundaries.
  */
 public class PacmanServerTest {
 
+    /**
+     * Verifies that the server correctly stores the game board matrix
+     * and returns it accurately upon request.
+     */
     @Test
     void testInitialBoardStorage() {
         int[][] mockBoard = {{1, 1, 1}, {1, 0, 1}};
@@ -21,6 +26,10 @@ public class PacmanServerTest {
         assertArrayEquals(mockBoard, server.getGame(0), "Server should store and return the board correctly.");
     }
 
+    /**
+     * Ensures that ghost entities are correctly initialized within the server
+     * and that their properties (like position) are preserved.
+     */
     @Test
     void testGhostIntegration() {
         int[][] emptyBoard = {{0}};
@@ -34,6 +43,10 @@ public class PacmanServerTest {
         assertEquals("5,5", retrievedGhosts[0].getPos(0), "Ghost position should match.");
     }
 
+    /**
+     * Validates that the Pacman entity is successfully linked to the server
+     * and starts at the designated coordinate.
+     */
     @Test
     void testPacmanIntegration() {
         int[][] emptyBoard = {{0}};
@@ -42,6 +55,10 @@ public class PacmanServerTest {
         assertEquals("7,7", server.getPos(0), "Pacman initialized position should be 7,7.");
     }
 
+    /**
+     * Tests standard movement logic.
+     * Verifies that Pacman can move from its current position into an adjacent empty cell.
+     */
     @Test
     void testPacmanMovementValid() {
         // Board layout:
@@ -61,12 +78,12 @@ public class PacmanServerTest {
         assertEquals("2,1", newPos, "Pacman should successfully move right to empty space.");
     }
 
+    /**
+     * Verifies wall collision logic.
+     * Ensures Pacman remains stationary when attempting to move into a wall cell (value 1).
+     */
     @Test
     void testPacmanMovementIntoWall() {
-        // Board layout:
-        // 1 1 1
-        // 1 0 0
-        // 1 1 1
         int[][] board = {
                 {1, 1, 1},
                 {1, 0, 0},
@@ -80,6 +97,10 @@ public class PacmanServerTest {
         assertEquals("1,1", newPos, "Pacman should NOT move into a wall.");
     }
 
+    /**
+     * Checks boundary constraints.
+     * Ensures that the server prevents Pacman from moving outside the array's index range.
+     */
     @Test
     void testPacmanMovementOutOfBounds() {
         // 1x1 Board
