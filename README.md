@@ -1,6 +1,13 @@
 # Ex3: Pac-Man - From AI Algorithm to Full Game Integration
 **Ariel University, School of Computer Science, 2026**
 
+## Video Demonstrations
+> **MUST WATCH:**
+> * **[📺 Full Game Interface & Server Implementation (Task 2)](https://youtu.be/d-32KOw_sBk)** >   *Demonstration of the "Rick and Morty" theme, Skin Selection, Audio, and Game Loop.*
+> * **[📺 AI Algorithm Level 4 Victory (Task 1)](https://youtu.be/CpcauM8SZPk)** >   *Proof of Level 4 clearance using the BFS Strategy.*
+
+---
+
 ## 1. Task 1: The Pac-Man Algorithm (Ex3Algo)
 The primary goal of this stage was to design and implement an autonomous agent capable of winning Level 4 while avoiding ghosts.
 
@@ -8,10 +15,14 @@ The primary goal of this stage was to design and implement an autonomous agent c
 To survive the high difficulty of Level 4, the algorithm utilizes a multi-layered strategic engine:
 * **Multi-Source BFS Danger Mapping**: Calculates the real-time distance from every dangerous ghost using a Breadth-First Search.
 * **Safe-Space Analysis**: Performs a reachability check (`countSafeSpace`) before every move to ensure Pac-Man doesn't enter dead-ends or corridors where it can be easily trapped.
-* **Dynamic Scoring Engine**: 
+* **Dynamic Scoring Engine**:
     * **Pellet Gathering**: Prioritizes pink dots using a distance-weighted scoring system ($1 / distance$).
     * **Hard Safety Filters**: Implements an "Escape Trigger" that overrides all objectives if a ghost breaches a critical safety radius.
     * **Anti-Oscillation Logic**: Features a 2-step position memory (Anti-ABAB) to prevent repetitive back-and-forth movement.
+
+### Level 4 Performance:
+* **Status**: Level Cleared Successfully.
+* **Strategy**: Consistent survival using safe-space verification.
 
 ---
 
@@ -55,7 +66,7 @@ The GUI was implemented using the `StdDraw` library with a customized "Rick and 
 
 ---
 
-## 5. Deliverables
+## 5. Deliverables (GitHub Release)
 * **Ex3_2.jar**: Client-side solution (AI running on external server).
 * **Ex3_3.jar**: Full solution (Client + Custom Server).
-* **Video**: 120-second demonstration of server implementation and gameplay.
+* **Source Code**: Full project source and resources.
