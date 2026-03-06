@@ -1,13 +1,6 @@
 # Ex3: Pac-Man - From AI Algorithm to Full Game Integration
 **Ariel University, School of Computer Science, 2026**
 
-## Video Demonstrations
-> **MUST WATCH:**
-> * **[📺 Full Game Interface & Server Implementation (Task 2)](https://youtu.be/d-32KOw_sBk)** >   *Demonstration of the "Rick and Morty" theme, Skin Selection, Audio, and Game Loop.*
-> * **[📺 AI Algorithm Level 4 Victory (Task 1)](https://youtu.be/CpcauM8SZPk)** >   *Proof of Level 4 clearance using the BFS Strategy.*
-
----
-
 ## 1. Task 1: The Pac-Man Algorithm (Ex3Algo)
 The primary goal of this stage was to design and implement an autonomous agent capable of winning Level 4 while avoiding ghosts.
 
@@ -66,7 +59,16 @@ The GUI was implemented using the `StdDraw` library with a customized "Rick and 
 
 ---
 
-## 5. Deliverables (GitHub Release)
+## 5. Video Demonstrations
+> **MUST WATCH:**
+> * **[📺 Full Game Interface & Server Implementation (Task 2)](https://youtu.be/d-32KOw_sBk)**
+>   *Demonstration of the "Rick and Morty" theme, Skin Selection, Audio, and Game Loop.*
+> * **[📺 AI Algorithm Level 4 Victory (Task 1)](https://youtu.be/CpcauM8SZPk)**
+>   *Proof of Level 4 clearance using the BFS Strategy.*
+
+---
+
+## 6. Deliverables (GitHub Release)
 * **Ex3_2.jar**: Client-side solution (AI running on external server).
 * **Ex3_3.jar**: Full solution (Client + Custom Server).
 * **Source Code**: Full project source and resources.
